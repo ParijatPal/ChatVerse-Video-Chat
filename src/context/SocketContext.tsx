@@ -4,6 +4,7 @@ import { Socket } from "socket.io-client";
 
 interface SocketContextType {
   socket: Socket | null;
+  isConnected: boolean; // ADDED
   emit: (event: string, data?: any, callback?: (response: any) => void) => void;
   on: (event: string, handler: (...args: any[]) => void) => () => void;
   once: (event: string, handler: (...args: any[]) => void) => void;
@@ -15,13 +16,14 @@ export const SocketProvider: React.FC<{
   children: ReactNode;
   socketUrl?: string;
 }> = ({ children, socketUrl = "http://localhost:3001" }) => {
-  const { socket, emit, on, once } = useSocket({
+  const { socket, isConnected, emit, on, once } = useSocket({ // ADDED isConnected
     url: socketUrl,
     autoConnect: true,
   });
 
   const value: SocketContextType = {
     socket,
+    isConnected, // ADDED
     emit,
     on,
     once,

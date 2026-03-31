@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import io, { Socket } from "socket.io-client";
 
 interface UseSocketOptions {
@@ -6,12 +6,9 @@ interface UseSocketOptions {
   autoConnect?: boolean;
 }
 
-interface SocketEvents {
-  [key: string]: (...args: any[]) => void;
-}
-
 export const useSocket = (options: UseSocketOptions = {}) => {
   const socketRef = useRef<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
   const { url = "http://localhost:3001", autoConnect = true } = options;
 
   // Initialize socket connection
@@ -27,10 +24,12 @@ export const useSocket = (options: UseSocketOptions = {}) => {
 
     socketRef.current.on("connect", () => {
       console.log("Socket connected:", socketRef.current?.id);
+      setIsConnected(true);
     });
 
     socketRef.current.on("disconnect", () => {
       console.log("Socket disconnected");
+      setIsConnected(false);
     });
 
     socketRef.current.on("error", (error) => {
@@ -42,7 +41,7 @@ export const useSocket = (options: UseSocketOptions = {}) => {
     };
   }, [url, autoConnect]);
 
-  // Emit event
+  // Emit event with connection check
   const emit = useCallback(
     (event: string, data?: any, callback?: (response: any) => void) => {
       if (socketRef.current?.connected) {
@@ -74,6 +73,7 @@ export const useSocket = (options: UseSocketOptions = {}) => {
 
   return {
     socket: socketRef.current,
+    isConnected,
     emit,
     on,
     once,
